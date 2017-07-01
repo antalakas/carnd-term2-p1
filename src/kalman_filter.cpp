@@ -17,6 +17,11 @@ void KalmanFilter::Init(VectorXd &x_in, MatrixXd &P_in, MatrixXd &F_in,
   Q_ = Q_in;
 }
 
+void KalmanFilter::Init() {
+  long x_size = x_.size();
+  I_ = MatrixXd::Identity(x_size, x_size);
+}
+
 void KalmanFilter::Predict() {
   /**
   TODO:
@@ -34,6 +39,23 @@ void KalmanFilter::Update(const VectorXd &z) {
   */
   VectorXd z_pred = H_ * x_;
   VectorXd y = z - z_pred;
+
+  UpdateCommon(y);
+}
+
+void KalmanFilter::UpdateEKF(const VectorXd &z) {
+  /**
+  TODO:
+    * update the state by using Extended Kalman Filter equations
+  */
+  VectorXd hx = tools_.CartesianToPolar(x_);
+  VectorXd y = z - hx;
+  y[1] = tools_.NormalizePhi(y[1]);
+
+  UpdateCommon(y);
+}
+
+void KalmanFilter::UpdateCommon(const VectorXd &y) {
   MatrixXd Ht = H_.transpose();
   MatrixXd S = H_ * P_ * Ht + R_;
   MatrixXd Si = S.inverse();
@@ -42,32 +64,5 @@ void KalmanFilter::Update(const VectorXd &z) {
 
   //new estimate
   x_ = x_ + (K * y);
-  long x_size = x_.size();
-  MatrixXd I = MatrixXd::Identity(x_size, x_size);
-  P_ = (I - K * H_) * P_;
-}
-
-void KalmanFilter::UpdateEKF(const VectorXd &z) {
-  /**
-  TODO:
-    * update the state by using Extended Kalman Filter equations
-  */
-  MatrixXd Hj = tools_.CalculateJacobian(x_);
-  VectorXd hx = tools_.CartesianToPolar(x_);
-
-  VectorXd y = z - hx;
-
-  y[1] = tools_.NormalizePhi(y[1]);
-
-  MatrixXd Hjt = Hj.transpose();
-  MatrixXd S = Hj * P_ * Hjt + R_;
-  MatrixXd Si = S.inverse();
-  MatrixXd PHt = P_ * Hjt;
-  MatrixXd K = PHt * Si;
-
-  //new estimate
-  x_ = x_ + (K * y);
-  long x_size = x_.size();
-  MatrixXd I = MatrixXd::Identity(x_size, x_size);
-  P_ = (I - K * Hj) * P_;
+  P_ = (I_ - K * H_) * P_;
 }

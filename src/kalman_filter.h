@@ -24,7 +24,10 @@ public:
   // measurement covariance matrix
   Eigen::MatrixXd R_;
 
-  // used to compute the RMSE later
+  // the identity matrix
+  Eigen::MatrixXd I_;
+
+  // used to compute the Cartesian To Polar later
   Tools tools_;
 
   /**
@@ -50,6 +53,11 @@ public:
       Eigen::MatrixXd &H_in, Eigen::MatrixXd &R_in, Eigen::MatrixXd &Q_in);
 
   /**
+   * Init Initializes Kalman filter
+   */
+  void Init();
+
+  /**
    * Prediction Predicts the state and the state covariance
    * using the process model
    * @param delta_T Time between k and k+1 in s
@@ -68,6 +76,8 @@ public:
    */
   void UpdateEKF(const Eigen::VectorXd &z);
 
+private:
+  void UpdateCommon(const VectorXd &y);
 };
 
 #endif /* KALMAN_FILTER_H_ */

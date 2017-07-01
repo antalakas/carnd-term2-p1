@@ -89,8 +89,7 @@ VectorXd Tools::CartesianToPolar(const VectorXd &x_state) {
   float vy = x_state(3);
 
   float c1 = px*px+py*py;
-//  float c2 = py/px;
-  float c3 = px*vx + py*vy;
+  float c2 = px*vx + py*vy;
 
   //check division by zero
   if(fabs(c1) < 0.0001){
@@ -98,11 +97,11 @@ VectorXd Tools::CartesianToPolar(const VectorXd &x_state) {
       return hx;
   }
 
-  float h1 = sqrt(c1);
-  float h2 = atan2(py, px);
-  float h3 = c3/c1;
+  float ro = sqrt(c1);
+  float phi = atan2(py, px);
+  float ro_dot = c2/ro;
 
-  hx << h1, h2, h3;
+  hx << ro, phi, ro_dot;
 
   return hx;
 }
@@ -120,23 +119,6 @@ VectorXd Tools::PolarToCartesian(const float& ro, const float& phi)
 
   coords << ro * cos(phi), ro * sin(phi);
 
-//  float tan2 = tan(phi) * tan(phi);
-//
-//  float c1 = 1 + tan2;
-//
-//  //check division by zero
-//  if(fabs(c1) < 0.0001){
-//      cout << "PolarToCartesian () - Error - Division by Zero" << endl;
-//      return coords;
-//  }
-//
-//  float c2 = 1/c1;
-//
-//  float px = ro * sqrt(c2);
-//  float py = ro * sqrt(1-c2);
-//
-//  coords << px, py;
-
   return coords;
 }
 
@@ -146,5 +128,5 @@ float Tools::NormalizePhi(const float& phi)
   TODO:
     * Normalize phi here.
   */
-  return fmod(phi, M_PI);
+  return fmod(phi, 2 * M_PI);
 }
